@@ -134,6 +134,6 @@ if __name__ == '__main__':
 
         testwriter.writerow(['name', 'id'])
         for i in range(0, len(testfnps)):
-            name = str(i + 1) + '_0.' + testfnps[i].fppath.split('.')[-1]
+            name = str(i + 1) + '_1.' + testfnps[i].fppath.split('.')[-1]
             copyfile(testfnps[i].fppath, path.join(p_test, name))
             testwriter.writerow([name, str(testfnps[i].id)])
