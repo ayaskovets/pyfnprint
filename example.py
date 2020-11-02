@@ -9,9 +9,8 @@ import fplib.plot       as fpplot
 import fplib.preprocess as fppreprocess
 
 
-def prepare(path):
+def _prepare(fnp: fpimage.FingerprintImage):
     # read image
-    fnp = fpimage.readOne(path)
     img = fnp.getData()
     img = fppreprocess.resize(img, width=400, height=500)
 
@@ -81,14 +80,20 @@ def prepare(path):
     feat_c = fpfeature.extract(mnte, method='circular', bucketsize=15)
     feat_r = fpfeature.extract(mnte, method='radial', bucketsize=10)
 
-    return fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r
+    return nimg, mask, ornt, sklt, mnte, feat_c, feat_r
 
-#path = './db/FVC/2000/DB1_B/101_8.tif'
-#fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r = prepare(path)
 
-# fpplot.plotimage(nimg * mask)
-# fpplot.plotorient(nimg, ornt, blksize)
-# fpplot.plotminutae(sklt, mnte)
+def enroll(fnp):
+    nimg, mask, ornt, sklt, mnte, feat_c, feat_r = prepare(fnp)
 
-# fpplot.plotimage(1 - nimg)
-fpplot.plotorient(sklt, ornt, 25)
+def identify(fnp):
+
+
+fnps = fpimage.readFolder('./db/dataset/train/*.tif')
+for fnp in fnps:
+    enroll(fnp, )
+
+    # visualizations
+    # fpplot.plotimage(nimg * mask)
+    # fpplot.plotorient(nimg, ornt, 15)
+    fpplot.plotminutae(sklt, mnte)
