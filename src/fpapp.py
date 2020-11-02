@@ -73,13 +73,15 @@ def prepare(path):
     mnte = fpminutae.minutae(sklt, ornt, remove_invalid=1)
 
     # core point detection
-    mnte = np.vstack((mnte, fpminutae.core(ornt, mask=mask)))
+    mnte = np.resize(mnte, (mnte.shape[0] + 1,))
+    mnte[mnte.shape[0] - 1] = fpminutae.core(ornt, mask)
 
-    return nimg, mask, sklt, mnte, ornt
+    return fnp, nimg, mask, sklt, mnte, ornt
 
 
 path = './test/FVC/2000/DB1_B/101_6.tif'
-nimg, mask, sklt, mnte, ornt = prepare(path)
+# path = './test/PNG/1_1.png'
+fnp, nimg, mask, sklt, mnte, ornt = prepare(path)
 
 # fpplot.plotimage(nimg * mask)
 # fpplot.plotorient(nimg, ornt, blksize)
