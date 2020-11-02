@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-from fplib.minutae import Type
+from fplib.minutae import MnType
 from fplib.preprocess import _orientblk_angle
 
 
@@ -114,25 +114,26 @@ Can be acquired via minutae() function
     fig, ax = plt.subplots()
     plt.imshow(sklt, cmap='gray')
 
-    for i, j, t, a in minutae:
-        col = None
-        if t == Type.Termination:
-            col = 'red'
-            ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
-        elif t == Type.Bifurcation:
-            col = 'blue'
-            ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
-        elif t == Type.Core:
-            col = 'lime'
-            ax.add_artist(plt.Circle((j, i), radius=5, color=col, fill=True))
+    for point in minutae:
+        i, j, t, a = point if len(point) == 4 else point + (None,)
+        clr = None
+        if t == MnType.Termination:
+            clr = 'red'
+            ax.add_artist(plt.Circle((j, i), radius=2, color=clr, fill=False))
+        elif t == MnType.Bifurcation:
+            clr = 'blue'
+            ax.add_artist(plt.Circle((j, i), radius=2, color=clr, fill=False))
+        elif t == MnType.Core:
+            clr = 'lime'
+            ax.add_artist(plt.Circle((j, i), radius=5, color=clr, fill=True))
 
         if a is not None:
             k = math.tan(np.deg2rad(a))
             if np.abs(k) > 1:
                 x = lambda y: y / k
-                plt.plot([j + x(-5), j + x(5)], [i - 5, i + 5], color=col)
+                plt.plot([j + x(-5), j + x(5)], [i - 5, i + 5], color=clr)
             else:
                 y = lambda x: x * k
-                plt.plot([j - 5, j + 5], [i + y(-5), i + y(5)], color=col)
+                plt.plot([j - 5, j + 5], [i + y(-5), i + y(5)], color=clr)
 
     plt.show()
