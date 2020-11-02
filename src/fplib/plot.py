@@ -1,3 +1,5 @@
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -75,18 +77,28 @@ def plotminutae(sklt: np.array,
 
     Arguments:
         sklt    - skeleton image. Can be acquired via skeleton() function
-        minutae - minutae list consisting of tuples (row, col, minutae_type). \
+        minutae - minutae list consisting of tuples (row, col, type, angle). \
 Can be acquired via minutae() function
     """
     fig, ax = plt.subplots()
     plt.imshow(sklt, cmap='gray')
 
-    for i, j, t in minutae:
+    for i, j, t, a in minutae:
+        col = None
         if t == Type.Termination:
-            ax.add_artist(plt.Circle((j, i), radius=2, color='red',
-                fill=False))
+            col = 'red'
+            ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
         elif t == Type.Bifurcation:
-            ax.add_artist(plt.Circle((j, i), radius=2, color='yellow',
-                fill=False))
+            col = 'yellow'
+            ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
+
+        if a is not None:
+            k = math.tan(np.deg2rad(a))
+            if np.abs(k) > 1:
+                x = lambda y: y / k
+                plt.plot([j + x(-5), j + x(5)], [i - 5, i + 5], color=col)
+            else:
+                y = lambda x: x * k
+                plt.plot([j - 5, j + 5], [i + y(-5), i + y(5)], color=col)
 
     plt.show()

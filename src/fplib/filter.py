@@ -136,7 +136,7 @@ def medgabor(image: np.array,
 
     Return the filtered image
     """
-    medfreq = np.round(np.median(freq), 2)
+    medfreq = np.round(np.median(freq[freq > 0]), 2)
     sigma_x = 0.66 / medfreq
     sigma_y = 0.66 / medfreq
 

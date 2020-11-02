@@ -201,7 +201,7 @@ def _freq(image: np.array,
     if verbose:
         plt.figure()
         plt.imshow(1 - rot, cmap='gray')
-        plt.text(0, -3, "Number of peaks =" + str(n_peaks))
+        plt.text(0, -3, 'Number of peaks =' + str(n_peaks))
 
         npts = len(prj)
         plt.plot(np.linspace(0, npts, npts), prj / max(prj) * npts, color='r')
