@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime
 from enum import Enum
 from os import listdir, makedirs, path
 from shutil import copyfile
@@ -38,6 +39,7 @@ def split(paths: List[str],
             folders[d][fnp.id].append(fnp)
     # Shuffle the files
     db = []
+    i = 1
     for folder, fnprints in folders.items():
         ids = list(fnprints.keys())
         random.shuffle(ids)
@@ -46,7 +48,9 @@ def split(paths: List[str],
             random.shuffle(fnps)
             for n in range(0, len(fnps)):
                 fnps[n].number = n + 1
+                fnps[n].id = i
             db.append(fnps)
+            i += 1
     # Split to train and test
     train = defaultdict(list)
     test = defaultdict(list)
@@ -82,6 +86,7 @@ if __name__ == '__main__':
 
     p_users = 100
     p_images = 50
+    seed = int(datetime.now().strftime('%Y%m%d%H%M%S'))
 
     for opt, arg in opts:
         if opt == '-u':
@@ -93,31 +98,42 @@ if __name__ == '__main__':
             if p_images > 100 or p_images < 0:
                 raise Exception('-n option must be within [0, 100] range')
         elif opt == '-s':
-            random.seed(int(arg))
+            seed = int(arg)
+
+    random.seed(seed)
 
     train, test = split(args[:-1], p_users, p_images)
 
-    # Write train
+    # Create train & test folders
     p_train = path.join(args[-1], 'train')
     if not path.exists(p_train):
         makedirs(p_train)
-    for id, fnps in train.items():
-        for fnp in fnps:
-            name = str(id)+'_'+str(fnp.number)+'.'+fnp.fppath.split('.')[-1]
-            print(fnp.fppath, '->', path.join(p_train, name)) # DEBUG
-            # copyfile(fnp.fppath, path.join(p_train, name))
-
-    # Write test
     p_test = path.join(args[-1], 'test')
     if not path.exists(p_test):
         makedirs(p_test)
 
+    # Write train as it is
+    for id, fnps in train.items():
+        for fnp in fnps:
+            name = str(id) + '_' + str(fnp.number) + '.' +\
+                fnp.fppath.split('.')[-1]
+            copyfile(fnp.fppath, path.join(p_train, name))
+
+    # Write test shuffled
     testfnps = []
     for id, fnps in test.items():
         for fnp in fnps:
             testfnps.append(fnp)
     random.shuffle(testfnps)
 
-    i = 1
+    with open(path.join(args[-1], 'test.csv'), 'w') as testfile:
+        testwriter = csv.writer(testfile, delimiter=',')
+        testwriter.writerow(['seed', str(seed)])
+        for a in args[:-1]:
+            testwriter.writerow(['path', a])
 
-    #with open(path.join(args[-1], 'test.csv'), 'w') as testfile:
+        testwriter.writerow(['name', 'id'])
+        for i in range(0, len(testfnps)):
+            name = str(i + 1) + '_0.' + testfnps[i].fppath.split('.')[-1]
+            copyfile(testfnps[i].fppath, path.join(p_test, name))
+            testwriter.writerow([name, str(testfnps[i].id)])
