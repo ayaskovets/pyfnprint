@@ -1,7 +1,8 @@
 from glob import glob
 from os import path
 
-from cv2 import imread
+import cv2 as cv
+import numpy as np
 
 
 class FingerprintImage:
@@ -10,24 +11,20 @@ class FingerprintImage:
 
     Arguments:
         id     - unique fingerprint id
-        hand   - hand identifier
-        finger - finger number
-        fppath - path to the fingerprint image
+        number - image (scanner) identifier
     """
     def __init__(self,
                  id: int,
-                 hand: int,
-                 finger: int,
+                 number: int,
                  fppath: str):
         self.id = id
-        self.hand = hand
-        self.finger = finger
+        self.number = number
         self.fppath = fppath
 
     def getData(self,
-                colorspace: int,
-                astype: int):
-        return imread(self.fppath, colorspace).astype(astype)
+                colorspace: int=cv.IMREAD_GRAYSCALE,
+                astype: int=np.uint8):
+        return cv.imread(self.fppath, colorspace).astype(astype)
 
 def readOne(fppath: str):
     """
@@ -43,14 +40,12 @@ def readOne(fppath: str):
         while '' in spl:
             spl.remove('')
 
-        if len(spl) < 1:
-            raise Exception(fppath + ' must start with [id_]')
+        if len(spl) < 2:
+            raise Exception(fppath + ' must be \'[fingerid]_[imageid]\'.*')
 
-        id = int(spl[0])
-        hand = (0 if len(spl) < 2 else int(spl[1]))
-        finger = (0 if len(spl) < 3 else int(spl[2]))
+        id, number = int(spl[0]), int(spl[1])
 
-        return FingerprintImage(id, hand, finger, fppath)
+        return FingerprintImage(id, number, fppath)
     else:
         raise Exception(fppath + ' is not found!')
 
