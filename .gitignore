@@ -130,5 +130,4 @@ dmypy.json
 .pyre/
 
 # Test images folder
-db
 data
