@@ -27,12 +27,21 @@ def _extract_circular(minutae: np.array,
     if core is None:
         raise Exception('missing core point for circular method')
 
-    features = []
+    dist = []
     for point in minutae:
         i, j, t, _ = point if len(point) == 4 else point + (None,)
-        
+        dist.append(np.linalg.norm(
+            np.array((core[0], core[1])) - np.array((i, j))))
 
-    return np.array(features)
+    feat = []
+    for i in range(0, int(np.max(dist)/bucketsize) + 1):
+        feat.append({ MnType.Termination: 0, MnType.Bifurcation: 0 })
+    for i in range(0, len(dist)):
+        t = minutae[i][2]
+        if t == MnType.Termination or t == MnType.Bifurcation:
+            feat[int(dist[i]/bucketsize)][t] += 1
+
+    return np.array(feat)
 
 
 def extract(minutae: np.array,
