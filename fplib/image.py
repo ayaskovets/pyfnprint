@@ -21,6 +21,15 @@ class FingerprintImage:
         self.number = number
         self.fppath = fppath
 
+    def __eq__(self, other):
+        return self.id == other.id and self.number == other.number
+
+    def __lt__(self, other):
+        if self.id == other.id:
+            return self.number < other.number
+        else:
+            return self.id < other.id
+
     def getData(self,
                 colorspace: int=cv.IMREAD_GRAYSCALE,
                 astype: int=np.uint8):
