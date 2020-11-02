@@ -9,7 +9,7 @@ Simple fingerprint recognition library written in Python3
 
 # Structure
 
-## fplib
+## [fplib](fplib)
 
 - The library sources containing the following modules:
     - [image.py](fplib/image.py) - a wrapper for a fingerprint image with a filename like "${id}_${number}.${ext}" and lazy file reading
@@ -20,7 +20,7 @@ Simple fingerprint recognition library written in Python3
     - [feature.py](fplib/feature.py) - feature extraction and comparison module
     - [plot.py](fplib/plot.py) - plotting module for various stages of preprocessing
 
-## db/PNG
+## [db/PNG](db/PNG)
 
 - Database containing 128 high quality fingerprint images 8 for each user
 - More challenging are databases used by the FVC competition
