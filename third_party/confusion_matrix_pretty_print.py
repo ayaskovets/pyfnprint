@@ -211,6 +211,6 @@ def plot_confusion_matrix_from_data(y_test, predictions, columns=None, annot=Tru
     from pandas import DataFrame
 
     confm = confusion_matrix(y_test, predictions)
-    df_cm = DataFrame(confm, index=columns, columns=columns)
+    df_cm = DataFrame(confm)
     pretty_plot_confusion_matrix(df_cm, fz=fz, cmap=cmap, figsize=figsize, show_null_values=show_null_values, pred_val_axis=pred_val_axis)
 #
