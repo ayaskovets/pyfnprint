@@ -1,6 +1,7 @@
 import numpy as np
 
 import fplib.binarize   as fpbinarize
+import fplib.feature    as fpfeature
 import fplib.filter     as fpfilter
 import fplib.image      as fpimage
 import fplib.minutae    as fpminutae
@@ -76,12 +77,15 @@ def prepare(path):
     mnte = np.resize(mnte, (mnte.shape[0] + 1,))
     mnte[mnte.shape[0] - 1] = fpminutae.core(ornt, mask)
 
-    return fnp, nimg, mask, sklt, mnte, ornt
+    # feature vector creation
+    feat = fpfeature.extract(mnte, method='circular', bucketsize=10)
+
+    return fnp, nimg, mask, ornt, sklt, mnte, feat
 
 
 path = './test/FVC/2000/DB1_B/101_8.tif'
-#path = './test/PNG/1_1.png'
-fnp, nimg, mask, sklt, mnte, ornt = prepare(path)
+#path = './test/PNG/1_4.png'
+fnp, nimg, mask, ornt, sklt, mnte, feat = prepare(path)
 
 # fpplot.plotimage(nimg * mask)
 # fpplot.plotorient(nimg, ornt, blksize)
