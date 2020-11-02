@@ -185,6 +185,7 @@ def medgabor(image: np.array,
     return flt
 
 
+# Non-optimized gabor filtering
 """
 def gabor(image, orient, freq):
     flt = np.zeros(image.shape)

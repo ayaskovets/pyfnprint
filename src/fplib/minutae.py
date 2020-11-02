@@ -90,7 +90,6 @@ def _remove_border_points(sklt: np.array,
     return result
 
 
-import fplib.plot as fpplot
 def core(ornt: np.array,
          mask: np.array=None,
          blksize: int=None):
@@ -125,16 +124,20 @@ orientation() function
         pnac *= mask
 
     # Create mask to search for core orientations clockwise
-    coremask = np.array([
+    arch_5x5 = np.array([
         [-45, -30, 0, 30, 45],
         [-50, -45, 90, 45, 50],
         [-70, 90, 90, 90, 70],
         [90, 90, 90, 90, 90],
         [90, 90, 90, 90, 90]
-        # [-45, 0, 45],
-        # [90, 90, 90],
-        # [90, 90,  90]
     ])
+    crcl_3x3 = np.array([
+        [-45, 0, 45],
+        [90, 90, 90],
+        [90, 90,  90]
+    ])
+
+    coremask = arch_5x5
 
     padw = int(np.floor(coremask.shape[0] / 2))
     sclangl = angl[::blksize, ::blksize]
