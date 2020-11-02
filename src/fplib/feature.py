@@ -24,17 +24,23 @@ def _extract_radial(minutae: np.array,
             h = float(abs(i - core[0]))
             w = float(abs(j - core[1]))
 
-            angle = np.pi if i == core[0] else np.pi/2
+            angle = None
             if i < core[0]:
                 if j > core[1]: # 1st quarter
                     angle = int(np.rad2deg(np.arctan(h/w)))
                 elif j < core[1]: # 2nd quarter
                     angle = int(np.rad2deg(np.arctan(w/h))) + 90
+                else:
+                    angle = 90
             elif i > core[0]:
                 if j < core[1]: # 3rd quarter
                     angle = int(np.rad2deg(np.arctan(h/w))) + 180
                 elif j > core[1]: # 4th quarter
                     angle = int(np.rad2deg(np.arctan(w/h))) + 270
+                else:
+                    angle = 270
+            else:
+                angle = 0 if j > core[1] else 180
 
             feat[angle//bucketsize][t] += 1
 
@@ -58,12 +64,12 @@ def _extract_circular(minutae: np.array,
             np.array((core[0], core[1])) - np.array((i, j))))
 
     feat = []
-    for i in range(0, np.max(dist)//bucketsize + 1):
+    for i in range(0, int(np.max(dist))//bucketsize + 1):
         feat.append({ MnType.Termination: 0, MnType.Bifurcation: 0 })
     for i in range(0, len(dist)):
         t = minutae[i][2]
         if t == MnType.Termination or t == MnType.Bifurcation:
-            feat[dist[i]//bucketsize][t] += 1
+            feat[int(dist[i])//bucketsize][t] += 1
 
     return np.array(feat)
 
