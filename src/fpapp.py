@@ -79,8 +79,8 @@ def prepare(path):
     return fnp, nimg, mask, sklt, mnte, ornt
 
 
-path = './test/FVC/2000/DB1_B/101_6.tif'
-# path = './test/PNG/1_1.png'
+path = './test/FVC/2000/DB1_B/101_8.tif'
+#path = './test/PNG/1_1.png'
 fnp, nimg, mask, sklt, mnte, ornt = prepare(path)
 
 # fpplot.plotimage(nimg * mask)

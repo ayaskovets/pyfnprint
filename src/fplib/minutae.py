@@ -124,14 +124,19 @@ orientation() function
     if mask is not None:
         pnac *= mask
 
-    # Create mask to search for circular orientations
-    circle = np.array([
-        [-45, 0, 45],
-        [90, 90, 90],
-        [45, 0, -45]
+    # Create mask to search for core orientations clockwise
+    coremask = np.array([
+        [-45, -30, 0, 30, 45],
+        [-50, -45, 90, 45, 50],
+        [-70, 90, 90, 90, 70],
+        [90, 90, 90, 90, 90],
+        [90, 90, 90, 90, 90]
+        # [-45, 0, 45],
+        # [90, 90, 90],
+        # [90, 90,  90]
     ])
 
-    padw = int(np.floor(circle.shape[0] / 2))
+    padw = int(np.floor(coremask.shape[0] / 2))
     sclangl = angl[::blksize, ::blksize]
     padangl = np.pad(sclangl, padw, constant_values=0)
 
@@ -141,27 +146,39 @@ orientation() function
             r = i + padw
             c = j + padw
 
-            d = np.abs(padangl[r-padw:r+padw+1, c-padw:c+padw+1] - circle)
+            d = np.abs(padangl[r-padw:r+padw+1, c-padw:c+padw+1] - coremask)
             d[d > 90] -= 180
 
             crcl[i, j] = np.sum(np.abs(d))
-    crcl = 1 - fppreprocess.normalize(crcl, 0, 1)
+    crcl = (1-fppreprocess.normalize(crcl, 0, 1)) * mask[::blksize, ::blksize]
 
     # Look through N most probable points and find the most conforming one
-    N = 10
+    N = 7
 
     pnacmax = np.sort(np.unique(pnac[::blksize, ::blksize].ravel()))[-N:][::-1]
     crclmax = np.sort(np.unique(crcl.ravel()))[-N:][::-1]
 
     # Find the most probable point
     sclpnac = pnac[::blksize, ::blksize]
-    # sclpnac[5, 5] = 1
 
     row, col, coef = 0, 0, 0
     for pval in pnacmax:
-        pmatches = np.where(sclpnac == pval)
+        pmatches = np.transpose(np.where(sclpnac == pval))
         for pmatch in pmatches:
             for cval in crclmax:
-                pass
+                cmatches = np.transpose(np.where(crcl == cval))
+                for cmatch in cmatches:
+                    dist = np.linalg.norm(pmatch - cmatch)
+                    newcoef = (pval + cval) / (dist if dist != 0 else 1)
+                    if (newcoef > coef):
+                        coef = newcoef
+                        row = int((cmatch[0] + pmatch[0] + 1) * blksize / 2)
+                        col = int((cmatch[1] + pmatch[1] + 1) * blksize / 2)
+
+    if verbose:
+        # PLOT: angles and core probability maps
+        fpplot.plotstack((pnac[::blksize, ::blksize], crcl), axis='x')
+        fpplot.plotangles(crcl.repeat(blksize, axis=0).repeat(blksize, axis=1),
+            angl, blksize)
 
     return (row, col, MnType.Core)
