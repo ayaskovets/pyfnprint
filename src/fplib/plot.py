@@ -40,7 +40,7 @@ def plotorient(image: np.array,
     Plot the orientation image
 
     Arguments:
-        image   - 
+        image   - image to plot
         orient  - orientation matrix of the image. Can be acquired via \
 orientation() function
         blksize - quiver plot block size
@@ -75,7 +75,7 @@ def plotminutae(sklt: np.array,
 
     Arguments:
         sklt    - skeleton image. Can be acquired via skeleton() function
-        minutae - minutae list consisting of tuples (x, y, minutae_type). \
+        minutae - minutae list consisting of tuples (row, col, minutae_type). \
 Can be acquired via minutae() function
     """
     fig, ax = plt.subplots()
