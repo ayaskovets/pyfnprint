@@ -178,7 +178,7 @@ def poincare(angles: np.array,
 
     Return the poincare index matrix
     """
-    idx = [(2,0), (1,0), (0,0), (0,1), (0,2), (1,2), (2,2), (2,1)]
+    idx = [(1,0), (0,0), (0,1), (0,2), (1,2), (2,2), (2,1), (2,0)]
     fpidx = lambda b: np.sum([b[k2] - b[k1] for k1, k2 in zip(idx, idx[1:])])
 
     angles_scaled = np.zeros(tuple(int(x / blksize) for x in angles.shape))
@@ -188,8 +188,6 @@ def poincare(angles: np.array,
                 angles_scaled[i, j] = np.mean(
                     angles[i * blksize:(i + 1) * blksize,
                            j * blksize:(j + 1) * blksize])
-    angles_scaled[angles_scaled < 90] += 180
-    angles_scaled[angles_scaled > 90] -= 180
 
     pidx = np.zeros(angles.shape)
     for i in range(1, angles_scaled.shape[0] - 1):
