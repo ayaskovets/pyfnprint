@@ -77,7 +77,7 @@ if __name__ == '__main__':
             '\n\t-u [number] - %% of train users (default 100)',
             '\n\t-n [number] - %% of train images per user (default 50)',
             '\n\t[paths]: multiple of folder (../) or wildcard (../*.png)',
-            '\n\t[out]: folder to write the outputs to',
+            '\n\t[out]:   folder to write the outputs to',
             sep='')
         sys.exit(1)
 
@@ -131,6 +131,7 @@ if __name__ == '__main__':
         testwriter.writerow(['seed', str(seed)])
         for a in args[:-1]:
             testwriter.writerow(['path', a])
+        testwriter.writerow(['enrolled', str(len(train))])
 
         testwriter.writerow(['name', 'id'])
         for i in range(0, len(testfnps)):
