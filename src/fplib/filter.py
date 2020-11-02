@@ -158,9 +158,7 @@ def medgabor(image: np.array,
 
     # Find indices of matrix points greater than maxsze from the image boundary
     validr, validc = np.array(np.where(freq != 0))
-    valididx = np.array(np.where(
-        (validr > krnsize) & (validr < image.shape[0] - krnsize) &
-        (validc > krnsize) & (validc < image.shape[1] - krnsize)))
+    padimage = np.pad(image, krnsize, constant_values=0)
 
     # Convert orientation matrix values from radians to a filter index
     gab_idx = np.round(orient * n_filters / np.pi)
@@ -170,20 +168,20 @@ def medgabor(image: np.array,
     flt = np.zeros(image.shape, dtype=np.float32)
 
     # Do the filtering
-    for k in valididx[0]:
-        r = validr[k]
-        c = validc[k]
+    for k in range(0, len(validr)):
+        r = validr[k] + krnsize
+        c = validc[k] + krnsize
 
-        gab = fbank[int(gab_idx[r][c] - 1)]
-        blk = image[r - krnsize:r + krnsize + 1, c - krnsize:c + krnsize + 1]
-        flt[r][c] = np.sum(blk * gab)
+        gab = fbank[int(gab_idx[r - krnsize][c - krnsize] - 1)]
+        blk = padimage[r - krnsize:r + krnsize + 1,
+            c - krnsize:c + krnsize + 1]
+        flt[r - krnsize][c - krnsize] = np.sum(blk * gab)
 
         # PLOT: Gabor filter along with the corresponding image block
         if verbose:
             plt.figure()
             plt.imshow(np.hstack((blk, gab)), cmap='gray')
             plt.show()
-
     return flt
 
 
