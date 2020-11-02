@@ -358,10 +358,8 @@ function
     """
     pruned = np.array(sklt)
     for _ in itertools.repeat(None, iters):
-        match = np.ones(sklt.shape)
         for wnd in windows:
-            match[binary_hit_or_miss(sklt, wnd)] = 0
-        pruned = pruned * match
+            pruned[binary_hit_or_miss(pruned, wnd)] = 0
 
     return pruned
 
