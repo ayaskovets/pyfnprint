@@ -126,8 +126,12 @@ def identify(fnp: fpimage.FingerprintImage,
         if template[1][1] == feat_c[1]:
             distances[template[0]] += fpfeature.distance(feat_c, template[1])
 
-    print(min(distances, key=distances.get), distances)
-    return min(distances, key=distances.get)
+    minid = min(distances, key=distances.get)
+    thresh = np.mean(list(distances.values()))/1.5
+
+    ret = minid if (distances[minid] < thresh) else 0
+    print(ret, distances[minid], thresh)
+    return ret
 
 
 if __name__ == "__main__":
@@ -136,12 +140,12 @@ if __name__ == "__main__":
     template_storage = path.join(root, 'templates')
 
     # create templates
-    train_fnps = sorted(fpimage.readFolder(path.join(root, 'train', '*')))
-    for i in range(0, len(train_fnps)):
-        print('[', i + 1, '/', len(train_fnps), '] Enrolling ',
-            train_fnps[i].fppath, '...', sep='')
+    # train_fnps = sorted(fpimage.readFolder(path.join(root, 'train', '*')))
+    # for i in range(0, len(train_fnps)):
+    #     print('[', i + 1, '/', len(train_fnps), '] Enrolling ',
+    #         train_fnps[i].fppath, '...', sep='')
 
-        enroll(train_fnps[i], template_storage)
+    #     enroll(train_fnps[i], template_storage)
 
     # write the prediction file
     with open(path.join(root, 'prediction.csv'), 'w') as testfile:

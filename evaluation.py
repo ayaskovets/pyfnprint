@@ -40,17 +40,13 @@ def evaluate(test_csv_path: str,
             else:
                 prediction[int(row[0].split('_')[0])] = int(row[1])
 
-    if enrolled == len(unique(list(test.values()))):
-        # Identification mode
-        confusion_matrix_pretty_print.plot_confusion_matrix_from_data(
-            list(test.values()), list(prediction.values()),
-            columns=list(range(1, enrolled + 1)), fz=8, show_null_values=True)
-    else:
-        # Verification mode
-        pass
+    columns = list(range(1, enrolled + 1))
+    if enrolled < len(unique(list(test.values()))):
+        columns = list(range(1, enrolled + 1)) + [0]
 
-    #print(test)
-    #print(prediction)
+    confusion_matrix_pretty_print.plot_confusion_matrix_from_data(
+        list(test.values()), list(prediction.values()),
+        columns=columns, fz=8, show_null_values=True)
 
 
 if __name__ == "__main__":
