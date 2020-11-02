@@ -83,22 +83,24 @@ def _prepare(fnp: fpimage.FingerprintImage):
     mnte[mnte.shape[0] - 1] = fpminutae.core(ornt, mask)
 
     # feature vector creation
-    feat = fpfeature.extract(mnte, method='radial', bucketsize=30)
+    feat_r = fpfeature.extract(mnte, method='radial', bucketsize=36)
+    feat_c = fpfeature.extract(mnte, method='circular', bucketsize=30)
 
     # visualizations
     if verbose:
         fpplot.plotimage(nimg * mask)
         fpplot.plotminutae(sklt, mnte)
 
-    return nimg, mask, ornt, sklt, mnte, feat
+    return nimg, mask, ornt, sklt, mnte, feat_r, feat_c
 
 
 def enroll(fnp: fpimage.FingerprintImage,
            folder: str):
-    nimg, mask, ornt, sklt, mnte, feat = _prepare(fnp)
+    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp)
 
     template_path = path.join(folder, str(fnp.id) + '_' + str(fnp.number))
-    np.save(template_path, feat, allow_pickle=True)
+    np.save(template_path + '_r', feat_r, allow_pickle=True)
+    np.save(template_path + '_c', feat_c, allow_pickle=True)
 
 
 def load_templates(folder: str):
@@ -112,13 +114,17 @@ def load_templates(folder: str):
 
 def identify(fnp: fpimage.FingerprintImage,
              templates: list):
-    nimg, mask, ornt, sklt, mnte, feat = _prepare(fnp)
+    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp)
 
     distances = {}
     for template in templates:
         if template[0] not in distances.keys():
             distances[template[0]] = 0
-        distances[template[0]] += fpfeature.distance(feat, template[1])
+
+        if template[1][1] == feat_r[1]:
+            distances[template[0]] += fpfeature.distance(feat_r, template[1])
+        if template[1][1] == feat_c[1]:
+            distances[template[0]] += fpfeature.distance(feat_c, template[1])
 
     print(min(distances, key=distances.get), distances)
     return min(distances, key=distances.get)

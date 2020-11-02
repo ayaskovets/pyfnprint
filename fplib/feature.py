@@ -114,13 +114,14 @@ def distance(feat1: tuple,
             d += np.linalg.norm(f1 - f2)
     if feat1[1] == 'circular':
         for i in range(0, np.max([len(feat1[0]), len(feat2[0])])):
-            f1 = np.array([feat1[0][i][MnType.Termination],
-                  feat1[0][i][MnType.Bifurcation]])\
-                if i < len(feat1[0]) else np.zeros(len(feat1[0][0]))
-            
-            f2 = np.array([feat2[0][i][MnType.Termination],
-                  feat2[0][i][MnType.Bifurcation]])\
-                if i < len(feat1[1]) else np.zeros(len(feat2[0][0]))
+            f1 = np.zeros(len(feat1[0][0]))
+            if i < len(feat1[0]):
+                f1 = np.array([feat1[0][i][MnType.Termination],
+                  feat1[0][i][MnType.Bifurcation]])
+            f2 = np.zeros(len(feat2[0][0]))
+            if i < len(feat2[0]):
+                f2 = np.array([feat2[0][i][MnType.Termination],
+                  feat2[0][i][MnType.Bifurcation]])
 
             d += np.linalg.norm(f1 - f2)
 
