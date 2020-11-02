@@ -243,10 +243,33 @@ function
 
     Return the pruned image
     """
+    pruned = np.array(sklt)
     for _ in itertools.repeat(None, iters):
         match = np.ones(sklt.shape)
         for wnd in windows:
             match[binary_hit_or_miss(sklt, wnd)] = 0
-        sklt = sklt * match
+        pruned = pruned * match
 
-    return sklt
+    return pruned
+
+
+def fillholes(image: np.array,
+              hole_value: bool=0):
+    """
+    Fill one-pixel-sized holes in binary image
+
+    Arguments:
+        image - image to be processed
+
+    Return image with the holes filled
+    """
+    image_filled = np.array(image)
+    for i in range(1, image.shape[0] - 1):
+        for j in range(1, image.shape[1] - 1):
+            if image[i, j] == hole_value and\
+               not image[i + 1, j] == hole_value and\
+               not image[i - 1, j] == hole_value and\
+               not image[i, j + 1] == hole_value and\
+               not image[i, j - 1] == hole_value:
+                image_filled[i, j] = not hole_value
+    return image_filled
