@@ -65,8 +65,8 @@ orientation() function
                 plt.text(-0.5, -0.6, 'pfunc = ' + str(pfunc), color='black')
                 plt.show()
 
-    # Remove border terminations
     if remove_invalid:
+        # Remove border terminations
         points = _remove_border_points(sklt, points, ridge_value)
     return np.array(points)
 
