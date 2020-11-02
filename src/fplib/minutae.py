@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
 
-
 import fplib.preprocess as fppreprocess
 
 
@@ -17,6 +16,9 @@ class MnType(Enum):
     Core = 1
     Bifurcation = 2
     Termination = 3
+
+
+import fplib.plot as fpplot
 
 
 def minutae(sklt: np.array,
@@ -109,6 +111,8 @@ orientation() function
 
     # Acquire plain angles and square them
     angl = fppreprocess.angles(ornt, blksize)
+
+    """# Poor results with angular characteristics
     rads = np.deg2rad(angl)
     rads = rads * rads
 
@@ -122,8 +126,16 @@ orientation() function
     pnac[:,pnac.shape[1] - (pnac.shape[1]%blksize):] = 0
     if mask is not None:
         pnac *= mask
+    """
 
     # Create mask to search for core orientations clockwise
+    crcl_5x5 = np.array([
+        [-45, -30, 0, 30, 45],
+        [-50, -45, 90, 45, 50],
+        [-70, 90, 90, 90, 70],
+        [50, 45, 90, -45, -50],
+        [45, 30, 0, -30, -45]
+    ])
     arch_5x5 = np.array([
         [-45, -30, 0, 30, 45],
         [-50, -45, 90, 45, 50],
@@ -131,30 +143,39 @@ orientation() function
         [90, 90, 90, 90, 90],
         [90, 90, 90, 90, 90]
     ])
-    crcl_3x3 = np.array([
-        [-45, 0, 45],
-        [90, 90, 90],
-        [90, 90,  90]
-    ])
 
-    coremask = arch_5x5
+    coremask_side = 5
 
-    padw = int(np.floor(coremask.shape[0] / 2))
+    padw = int(np.floor(coremask_side / 2))
     sclangl = angl[::blksize, ::blksize]
     padangl = np.pad(sclangl, padw, constant_values=0)
 
-    crcl = np.zeros(sclangl.shape)
+    arch, crcl = np.zeros(sclangl.shape), np.zeros(sclangl.shape)
     for i in range(0, sclangl.shape[0]):
         for j in range(0, sclangl.shape[1]):
             r = i + padw
             c = j + padw
 
-            d = np.abs(padangl[r-padw:r+padw+1, c-padw:c+padw+1] - coremask)
+            d = np.abs(padangl[r-padw:r+padw+1, c-padw:c+padw+1] - arch_5x5)
             d[d > 90] -= 180
+            arch[i, j] = np.sum(np.abs(d))
 
+            d = np.abs(padangl[r-padw:r+padw+1, c-padw:c+padw+1] - crcl_5x5)
+            d[d > 90] -= 180
             crcl[i, j] = np.sum(np.abs(d))
-    crcl = (1-fppreprocess.normalize(crcl, 0, 1)) * mask[::blksize, ::blksize]
 
+    arch = (1 - fppreprocess.normalize(arch, 0, 1))
+    crcl = (1 - fppreprocess.normalize(crcl, 0, 1))
+    if mask is not None:
+        arch *= mask[::blksize, ::blksize]
+        crcl *= mask[::blksize, ::blksize]
+
+    mask_match = fppreprocess.normalize(arch * crcl, 0, 1)
+    mask_maxes = np.where(mask_match >= np.max(mask_match) - 0.1)
+    row = mask_maxes[0][0] * blksize + blksize / 2
+    col = mask_maxes[1][0] * blksize + blksize / 2
+
+    """ Poor results with angular characteristics
     # Look through N most probable points and find the most conforming one
     N = 7
 
@@ -177,11 +198,12 @@ orientation() function
                         coef = newcoef
                         row = int((cmatch[0] + pmatch[0] + 1) * blksize / 2)
                         col = int((cmatch[1] + pmatch[1] + 1) * blksize / 2)
+    """
 
     if verbose:
         # PLOT: angles and core probability maps
         fpplot.plotstack((pnac[::blksize, ::blksize], crcl), axis='x')
-        fpplot.plotangles(crcl.repeat(blksize, axis=0).repeat(blksize, axis=1),
+        fpplot._plotangles(crcl.repeat(blksize, axis=0).repeat(blksize, axis=1),
             angl, blksize)
 
     return (row, col, MnType.Core)
