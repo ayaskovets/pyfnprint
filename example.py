@@ -140,12 +140,12 @@ if __name__ == "__main__":
     template_storage = path.join(root, 'templates')
 
     # create templates
-    # train_fnps = sorted(fpimage.readFolder(path.join(root, 'train', '*')))
-    # for i in range(0, len(train_fnps)):
-    #     print('[', i + 1, '/', len(train_fnps), '] Enrolling ',
-    #         train_fnps[i].fppath, '...', sep='')
+    train_fnps = sorted(fpimage.readFolder(path.join(root, 'train', '*')))
+    for i in range(0, len(train_fnps)):
+        print('[', i + 1, '/', len(train_fnps), '] Enrolling ',
+            train_fnps[i].fppath, '...', sep='')
 
-    #     enroll(train_fnps[i], template_storage)
+        enroll(train_fnps[i], template_storage)
 
     # write the prediction file
     with open(path.join(root, 'prediction.csv'), 'w') as testfile:
