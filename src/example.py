@@ -83,11 +83,12 @@ def prepare(path):
 
     return fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r
 
-
-path = './test/FVC/2000/DB1_B/101_8.tif'
-#path = './test/PNG/1_4.png'
-fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r = prepare(path)
+#path = './db/FVC/2000/DB1_B/101_8.tif'
+#fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r = prepare(path)
 
 # fpplot.plotimage(nimg * mask)
 # fpplot.plotorient(nimg, ornt, blksize)
-fpplot.plotminutae(sklt, mnte)
+# fpplot.plotminutae(sklt, mnte)
+
+# fpplot.plotimage(1 - nimg)
+fpplot.plotorient(sklt, ornt, 25)
