@@ -44,9 +44,6 @@ def _extract_radial(minutae: np.array,
 
             feat[angle//bucketsize][t] += 1
 
-    for i in range(0, len(feat)):
-        print(i, feat[i])
-
     return np.array(feat)
 
 
@@ -106,7 +103,15 @@ def distance(feat1: tuple,
 
     d = 0
     if feat1[1] == 'radial':
-        raise Exception('radial method is not supported yet')
+        if len(feat1[0]) != len(feat2[0]):
+            raise Exception('different block sizes for \'radial\' method are\
+                not supported')
+        for i in range(0, len(feat1[0])):
+            f1 = np.array([feat1[0][i][MnType.Termination],
+                feat1[0][i][MnType.Bifurcation]])
+            f2 = np.array([feat2[0][i][MnType.Termination],
+                feat2[0][i][MnType.Bifurcation]])
+            d += np.linalg.norm(f1 - f2)
     if feat1[1] == 'circular':
         for i in range(0, np.max([len(feat1[0]), len(feat2[0])])):
             f1 = np.array([feat1[0][i][MnType.Termination],

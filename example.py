@@ -83,7 +83,7 @@ def _prepare(fnp: fpimage.FingerprintImage):
     mnte[mnte.shape[0] - 1] = fpminutae.core(ornt, mask)
 
     # feature vector creation
-    feat = fpfeature.extract(mnte, method='circular', bucketsize=20)
+    feat = fpfeature.extract(mnte, method='radial', bucketsize=30)
 
     # visualizations
     if verbose:
@@ -154,4 +154,3 @@ if __name__ == "__main__":
             name = path.basename(test_fnps[i].fppath)
             id = identify(test_fnps[i], templates)
             predictionwriter.writerow([name, str(id)])
-
