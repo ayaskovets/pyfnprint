@@ -137,4 +137,5 @@ if __name__ == '__main__':
         for i in range(0, len(testfnps)):
             name = str(i + 1) + '_1.' + testfnps[i].fppath.split('.')[-1]
             copyfile(testfnps[i].fppath, path.join(p_test, name))
-            testwriter.writerow([name, str(testfnps[i].id)])
+            id = 0 if testfnps[i].id > len(train) else testfnps[i].id
+            testwriter.writerow([name, str(id)])
