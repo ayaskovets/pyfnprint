@@ -78,14 +78,15 @@ def prepare(path):
     mnte[mnte.shape[0] - 1] = fpminutae.core(ornt, mask)
 
     # feature vector creation
-    feat = fpfeature.extract(mnte, method='circular', bucketsize=10)
+    feat_c = fpfeature.extract(mnte, method='circular', bucketsize=15)
+    feat_r = fpfeature.extract(mnte, method='radial', bucketsize=10)
 
-    return fnp, nimg, mask, ornt, sklt, mnte, feat
+    return fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r
 
 
 path = './test/FVC/2000/DB1_B/101_8.tif'
 #path = './test/PNG/1_4.png'
-fnp, nimg, mask, ornt, sklt, mnte, feat = prepare(path)
+fnp, nimg, mask, ornt, sklt, mnte, feat_c, feat_r = prepare(path)
 
 # fpplot.plotimage(nimg * mask)
 # fpplot.plotorient(nimg, ornt, blksize)
