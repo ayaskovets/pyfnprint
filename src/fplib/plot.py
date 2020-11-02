@@ -5,6 +5,7 @@ import numpy as np
 
 
 from fplib.minutae import Type
+from fplib.preprocess import _orientblk_angle
 
 
 def plotimage(image: np.array):
@@ -70,6 +71,36 @@ orientation() function
     plt.grid(False)
 
 
+def plotangles(image: np.array,
+               angles: np.array,
+               blksize: int):
+    """
+    Plot the skeleton image with minutae overlapped
+
+    Arguments:
+        image   - image to be used as a background
+        angles  - ridge rotation matrix. Can be acquired via angles() function
+        blksize - block size of angles
+    """
+    ls = np.floor(blksize / 2)
+    col = 'red'
+
+    tans = np.tan(np.deg2rad(angles))
+
+    plt.figure()
+    plt.imshow(image, cmap='gray')
+    for j in range(blksize, angles.shape[1], blksize):
+        for i in range(blksize, angles.shape[0], blksize):
+            k = tans[i, j]
+            if np.abs(k) > 1:
+                x = lambda y: y / k
+                plt.plot([j + x(-ls), j + x(ls)], [i - ls, i + ls], color=col)
+            else:
+                y = lambda x: x * k
+                plt.plot([j - ls, j + ls], [i + y(-ls), i + y(ls)], color=col)
+    plt.show()
+
+
 def plotminutae(sklt: np.array,
                 minutae: np.array):
     """
@@ -89,8 +120,11 @@ Can be acquired via minutae() function
             col = 'red'
             ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
         elif t == Type.Bifurcation:
-            col = 'yellow'
+            col = 'blue'
             ax.add_artist(plt.Circle((j, i), radius=2, color=col, fill=False))
+        elif t == Type.Core:
+            col = 'lime'
+            ax.add_artist(plt.Circle((j, i), radius=5, color=col, fill=True))
 
         if a is not None:
             k = math.tan(np.deg2rad(a))

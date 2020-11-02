@@ -14,7 +14,7 @@ def binarize(image: np.array,
         image     - image to binarize
         method    - algorithm, one of ['gauss', 'global', 'mean', 'otsu']
         threshold - threshold value for non-adaptive methods. Used in \
-['global', 'otsu']
+['global']
         blksize   - window side in pixels. Used in ['global', 'otsu']
         c         - constant to subtract from mean for adaptive methods. Used \
 in ['gauss', 'mean']
@@ -28,7 +28,7 @@ in ['gauss', 'mean']
     elif method == 'mean':
         return _binarize_mean(image, blksize, c)
     elif method == 'otsu':
-        return _binarize_otsu(image, threshold)
+        return _binarize_otsu(image)
     else:
         raise Exception(method + ' binarization method is not supported!')
 
@@ -58,8 +58,7 @@ def _binarize_global(img: np.array,
     return bin
 
 
-def _binarize_otsu(img: np.array,
-                   threshold: int):
+def _binarize_otsu(img: np.array):
     """ The OTSU binarization method """
-    _, bin = cv.threshold(img, threshold, 1, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    _, bin = cv.threshold(img, 0, 1, cv.THRESH_BINARY + cv.THRESH_OTSU)
     return bin

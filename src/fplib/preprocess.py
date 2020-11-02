@@ -142,9 +142,41 @@ def orientation(image: np.array,
     cos = fpfilter.filter(Gxx - Gyy, 'lowpass', int(3 * smtsigma), smtsigma)
 
     # Clockwise rotation in radians
-    orient = np.arctan2(sin, cos) / 2
-    orient[orient != 0] += np.pi / 2
+    orient = np.arctan2(sin, cos) / 2 + np.pi / 2
     return orient
+
+
+def angles(orient: np.array,
+           blksize: int):
+    """
+    Acquire the ridge rotation matrix from the orientation image
+
+    Arguments
+        orient  - orientation matrix of the image. Can be acquired via \
+orientation() function
+        blksize - block size of the returned rotation matrix
+
+    Return the ridge rotation matrix
+    """
+    angles = np.zeros(orient.shape)
+    for j in range(0, orient.shape[1], blksize):
+        for i in range(0, orient.shape[0], blksize):
+            angles[i - blksize:i + blksize, j - blksize:j + blksize] =\
+                _orientblk_angle(orient, (i, j), blksize)
+    return angles
+
+def _orientblk_angle(orient: np.array,
+                     point: tuple,
+                     blksize: int):
+    """ Return angle or clockwise rotation of an orientation matrix block """
+    i, j = point
+    i1, i2 = np.max([i - blksize, 0]), np.min([i + blksize, orient.shape[0]])
+    j1, j2 = np.max([j - blksize, 0]), np.min([j + blksize, orient.shape[1]])
+    blk = orient[i1:i2, j1:j2]
+
+    sin = np.mean(np.sin(2 * blk))
+    cos = np.mean(np.cos(2 * blk))
+    return np.round(np.rad2deg(np.arctan2(sin, cos) / 2), 2)
 
 
 def frequency(image: np.array,

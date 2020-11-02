@@ -1,17 +1,22 @@
 from enum import Enum
 from itertools import combinations
+from math import tan
 
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
 
 
+from fplib.preprocess import _orientblk_angle
+
+
 verbose = False
 
 
 class Type(Enum):
-    Bifurcation = 1,
-    Termination = 2
+    Core = 1,
+    Bifurcation = 2,
+    Termination = 3
 
 
 def minutae(sklt: np.array,
@@ -22,11 +27,11 @@ def minutae(sklt: np.array,
     Extract minutae points from the skeleton image
 
     Arguments:
-        sklt              - skeleton image
-        orient            - orientation matrix. Can be acquired via\
+        sklt           - skeleton image
+        orient         - orientation matrix. Can be acquired via the \
 orientation() function
-        ridge_value       - value of ridge pixels
-        remove_invalid    - whether to remove invalid minutae
+        ridge_value    - value of ridge pixels
+        remove_invalid - whether to remove invalid minutae
 
     Return list of tuples with minutae coordinates (row, col, type, angle)
     """
@@ -46,11 +51,11 @@ orientation() function
             angle = None
             if pfunc == 1:
                 if orient is not None:
-                    angle = _orientblk_rotation(orient, (i, j), 3)
+                    angle = _orientblk_angle(orient, (i, j), 3)
                 points.append((i, j, Type.Termination, angle))
             elif pfunc > 2:
                 if orient is not None:
-                    angle = _orientblk_rotation(orient, (i, j), 3)
+                    angle = _orientblk_angle(orient, (i, j), 3)
                 points.append((i, j, Type.Bifurcation, angle))
 
             if verbose:
@@ -64,20 +69,6 @@ orientation() function
     if remove_invalid:
         points = _remove_border_points(sklt, points, ridge_value)
     return np.array(points)
-
-
-def _orientblk_rotation(orient: np.array,
-                        point: tuple,
-                        wndsize: int):
-    """ Return angle or clockwise rotation of an orientation matrix block """
-    i, j = point
-    i1, i2 = np.max([i - wndsize, 0]), np.min([i + wndsize, orient.shape[0]])
-    j1, j2 = np.max([j - wndsize, 0]), np.min([j + wndsize, orient.shape[1]])
-    blk = orient[i1:i2, j1:j2]
-
-    sin = np.mean(np.sin(2 * blk))
-    cos = np.mean(np.cos(2 * blk))
-    return np.round(np.rad2deg(np.arctan2(sin, cos) / 2), 2)
 
 
 def _remove_border_points(sklt: np.array,
