@@ -2,11 +2,6 @@
 
 Simple fingerprint recognition library written in Python3
 
-# Prerequisites:
-
-- Python3 interpreter
-- Dependencies: numpy, opencv2, skimage, matplotlib
-
 # Structure
 
 ## [fplib](fplib)
@@ -36,3 +31,8 @@ Simple fingerprint recognition library written in Python3
 ## [example.py](example.py)
 
 - Example program that uses fplib sources to create a fingerprint identification model
+
+# Prerequisites:
+
+- Python3 interpreter
+- Dependencies: numpy, opencv2, skimage, matplotlib, pandas, seaborn
