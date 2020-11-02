@@ -1,7 +1,4 @@
-import time as tm
-
 import numpy as np
-import cv2 as cv
 
 import fplib.binarize   as fpbinarize
 import fplib.filter     as fpfilter
@@ -11,13 +8,10 @@ import fplib.plot       as fpplot
 import fplib.preprocess as fppreprocess
 
 
-# begin_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
-# end_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
-# print(end_time - begin_time, '= Time')
-
 def prepare(path):
+    # read image
     fnp = fpimage.readOne(path)
-    img = fnp.getData(colorspace=cv.IMREAD_GRAYSCALE, astype=np.uint8)
+    img = fnp.getData()
     img = fppreprocess.resize(img, width=400, height=500)
 
     # initial preprocessing
@@ -42,8 +36,38 @@ def prepare(path):
 
     # skeletization
     sklt = fppreprocess.skeleton(prep)
+
+    # morphologic transformations
     sklt = fppreprocess.prune(sklt,
-        np.array([[[0, 0, 0], [0, 1, 0], [0, 0, 0]]], np.bool))
+        np.array([
+            [[1, 0, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 1, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 0, 1], [0, 1, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 1, 1], [0, 0, 0]],
+            [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 0, 0], [0, 1, 0], [0, 0, 1]],
+            [[0, 0, 0], [0, 1, 0], [0, 1, 0]],
+            [[0, 0, 0], [0, 1, 0], [1, 0, 0]],
+            [[0, 0, 0], [1, 1, 0], [0, 0, 0]]
+        ]), 5)
+    sklt = fppreprocess.prune(sklt,
+        np.array([
+            [[1, 1, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 1, 1], [0, 1, 0], [0, 0, 0]],
+            [[0, 0, 1], [0, 1, 1], [0, 0, 0]],
+            [[0, 0, 0], [0, 1, 1], [0, 0, 1]],
+            [[0, 0, 0], [0, 1, 0], [0, 1, 1]],
+            [[0, 0, 0], [0, 1, 0], [1, 1, 0]],
+            [[0, 0, 0], [1, 1, 0], [1, 0, 0]],
+            [[1, 0, 0], [0, 1, 0], [1, 0, 0]]
+        ]), 1)
+    sklt = fppreprocess.prune(sklt,
+        np.array([
+            [[1, 1, 1], [0, 1, 0], [0, 0, 0]],
+            [[0, 0, 1], [0, 1, 1], [0, 0, 1]],
+            [[0, 0, 0], [0, 1, 0], [1, 1, 1]],
+            [[1, 0, 0], [1, 1, 0], [1, 0, 0]],
+        ]), 1)
 
     # minutae extraction
     mnte = fpminutae.minutae(sklt, ornt, remove_invalid=1)
@@ -51,16 +75,16 @@ def prepare(path):
     return nimg, mask, sklt, mnte, ornt
 
 
-nimg1, mask1, sklt1, mnte1, ornt1 = prepare('./test/PNG/7_4.png')
-# nimg2, mask2, sklt2, mnte2, ornt2 = prepare('./test/PNG/1_2.png')
+nimg, mask, sklt, mnte, ornt = prepare('./test/FVC/2000/DB1_B/101_1.tif')
 
-blksize = 15
-angl1 = fppreprocess.angles(ornt1, blksize)
+blksize = 11
+angl = fppreprocess.angles(ornt, blksize)
+rads = np.deg2rad(angl)
+rads = rads * rads
+# angc = fppreprocess.poincare(rads, blksize)
+angc = fppreprocess.angular_coherence(rads, blksize, blksize / 3)
 
-anglmod = np.deg2rad(angl1)
-anglmod = anglmod * anglmod
-
-# fpplot.plotimage(anglmod)
-
-pncr1 = fppreprocess.angular_coherence(anglmod, blksize, 11)
-fpplot.plotangles(pncr1, angl1, blksize)
+# fpplot.plotimage(nimg)
+# fpplot.plotorient(nimg, ornt, blksize)
+# fpplot.plotminutae(sklt, mnte)
+fpplot.plotangles(angc, angl, blksize)
