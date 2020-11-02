@@ -49,7 +49,7 @@ def prepare(path):
             [[0, 0, 0], [0, 1, 0], [0, 1, 0]],
             [[0, 0, 0], [0, 1, 0], [1, 0, 0]],
             [[0, 0, 0], [1, 1, 0], [0, 0, 0]]
-        ]), 5)
+        ]), 8)
     sklt = fppreprocess.prune(sklt,
         np.array([
             [[1, 1, 0], [0, 1, 0], [0, 0, 0]],
@@ -72,19 +72,15 @@ def prepare(path):
     # minutae extraction
     mnte = fpminutae.minutae(sklt, ornt, remove_invalid=1)
 
+    # core point detection
+    mnte = np.vstack((mnte, fpminutae.core(ornt, mask=mask)))
+
     return nimg, mask, sklt, mnte, ornt
 
 
-nimg, mask, sklt, mnte, ornt = prepare('./test/FVC/2000/DB1_B/101_1.tif')
+path = './test/FVC/2000/DB1_B/101_6.tif'
+nimg, mask, sklt, mnte, ornt = prepare(path)
 
-blksize = 11
-angl = fppreprocess.angles(ornt, blksize)
-rads = np.deg2rad(angl)
-rads = rads * rads
-# angc = fppreprocess.poincare(rads, blksize)
-angc = fppreprocess.angular_coherence(rads, blksize, blksize / 3)
-
-# fpplot.plotimage(nimg)
+# fpplot.plotimage(nimg * mask)
 # fpplot.plotorient(nimg, ornt, blksize)
-# fpplot.plotminutae(sklt, mnte)
-fpplot.plotangles(angc, angl, blksize)
+fpplot.plotminutae(sklt, mnte)
