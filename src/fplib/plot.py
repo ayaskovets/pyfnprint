@@ -71,7 +71,7 @@ orientation() function
     plt.grid(False)
 
 
-def plotangles(image: np.array,
+def _plotangles(image: np.array,
                angles: np.array,
                blksize: int):
     """
