@@ -3,6 +3,8 @@ import csv, getopt, sys
 
 from numpy import unique
 
+from third_party import confusion_matrix_pretty_print
+
 
 def evaluate(test_csv_path: str,
              prediction_csv_path: str):
@@ -40,13 +42,15 @@ def evaluate(test_csv_path: str,
 
     if enrolled == len(unique(list(test.values()))):
         # Identification mode
-        print('Identification mode')
+        confusion_matrix_pretty_print.plot_confusion_matrix_from_data(
+            list(test.values()), list(prediction.values()),
+            columns=list(range(1, enrolled + 1)), fz=8, show_null_values=True)
     else:
         # Verification mode
-        print('Verification mode')
+        pass
 
-    print(test)
-    print(prediction)
+    #print(test)
+    #print(prediction)
 
 
 if __name__ == "__main__":
