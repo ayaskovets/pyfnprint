@@ -82,15 +82,15 @@ def plotangles(image: np.array,
         angles  - ridge rotation matrix. Can be acquired via angles() function
         blksize - block size of angles
     """
-    ls = np.floor(blksize / 2)
+    ls = int(np.floor(blksize / 2))
     col = 'red'
 
     tans = np.tan(np.deg2rad(angles))
 
     plt.figure()
     plt.imshow(image, cmap='gray')
-    for j in range(blksize, angles.shape[1], blksize):
-        for i in range(blksize, angles.shape[0], blksize):
+    for j in range(ls, angles.shape[1], blksize):
+        for i in range(ls, angles.shape[0], blksize):
             k = tans[i, j]
             if np.abs(k) > 1:
                 x = lambda y: y / k

@@ -11,8 +11,9 @@ import fplib.plot       as fpplot
 import fplib.preprocess as fppreprocess
 
 
-begin_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
-
+# begin_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
+# end_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
+# print(end_time - begin_time, '= Time')
 
 def prepare(path):
     fnp = fpimage.readOne(path)
@@ -50,15 +51,16 @@ def prepare(path):
     return nimg, mask, sklt, mnte, ornt
 
 
-nimg1, mask1, sklt1, mnte1, ornt1 = prepare('./test/PNG/1_2.png')
-# _, sklt2, mnte2, _ = prepare('./test/PNG/1_4.png')
+nimg1, mask1, sklt1, mnte1, ornt1 = prepare('./test/PNG/7_4.png')
+# nimg2, mask2, sklt2, mnte2, ornt2 = prepare('./test/PNG/1_2.png')
 
-angl1 = fppreprocess.angles(ornt1, 10)
-# fpplot.plotangles(sklt1, angl1, 10)
+blksize = 15
+angl1 = fppreprocess.angles(ornt1, blksize)
 
-end_time = tm.clock_gettime(tm.CLOCK_MONOTONIC)
-print(end_time - begin_time, '= Time')
+anglmod = np.deg2rad(angl1)
+anglmod = anglmod * anglmod
 
-# fpplot.plotorient(nimg1, ornt1)
-# fpplot.plotimage(1 - sklt1)
-# fpplot.plotminutae(1 - sklt1, mnte1)
+# fpplot.plotimage(anglmod)
+
+pncr1 = fppreprocess.angular_coherence(anglmod, blksize, 11)
+fpplot.plotangles(pncr1, angl1, blksize)

@@ -128,7 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-src/libs
-src/src
+# Test images folder
 test

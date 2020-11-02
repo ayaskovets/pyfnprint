@@ -1,3 +1,4 @@
+import functools
 import itertools
 
 import cv2 as cv
@@ -164,6 +165,86 @@ orientation() function
             angles[i - blksize:i + blksize, j - blksize:j + blksize] =\
                 _orientblk_angle(orient, (i, j), blksize)
     return angles
+
+
+def poincare(angles: np.array,
+             blksize: int):
+    """
+    Acquire the poincare index for every block of the angles matrix
+
+    Arguments
+        angles  - ridge rotation matrix. Can be acquired via angles() function
+        blksize - block size of the returned index matrix
+
+    Return the poincare index matrix
+    """
+    idx = [(2,0), (1,0), (0,0), (0,1), (0,2), (1,2), (2,2), (2,1)]
+    fpidx = lambda b: np.sum([b[k2] - b[k1] for k1, k2 in zip(idx, idx[1:])])
+
+    angles_scaled = np.zeros(tuple(int(x / blksize) for x in angles.shape))
+    if (blksize > 1):
+        for i in range(0, angles_scaled.shape[0]):
+            for j in range(0, angles_scaled.shape[1]):
+                angles_scaled[i, j] = np.mean(
+                    angles[i * blksize:(i + 1) * blksize,
+                           j * blksize:(j + 1) * blksize])
+    angles_scaled[angles_scaled < 90] += 180
+    angles_scaled[angles_scaled > 90] -= 180
+
+    pidx = np.zeros(angles.shape)
+    for i in range(1, angles_scaled.shape[0] - 1):
+        for j in range(1, angles_scaled.shape[1] - 1):
+            blk = angles_scaled[i - 1:i + 2, j - 1:j + 2]
+            pidx[(i - 1) * blksize:(i + 2) * blksize,
+                 (j - 1) * blksize:(j + 2) * blksize] = fpidx(blk)
+    return pidx
+
+
+def angular_coherence(angles: np.array,
+                      blksize: int,
+                      wndsize: int):
+    """
+    Acquire the angular coherence for every block of the angles matrix
+
+    Arguments
+        angles  - ridge rotation matrix. Can be acquired via angles() function
+        blksize - block size of the returned coherence matrix
+        wndsize - size of the window to calculate coherence in
+
+    Return the angular coherence matrix
+    """
+    angles_scaled = np.zeros(tuple(int(x / blksize) for x in angles.shape))
+    h, w = angles_scaled.shape
+    if (blksize > 1):
+        for i in range(0, h):
+            for j in range(0, w):
+                angles_scaled[i, j] = np.mean(
+                    angles[i * blksize:(i + 1) * blksize,
+                           j * blksize:(j + 1) * blksize])
+
+    hlfwnd = int(np.floor(wndsize / 2))
+
+    angcoh = np.zeros(angles.shape)
+    for i in range(0, h):
+        for j in range(0, w):
+            i1, i2 = np.max((0, i - hlfwnd)), np.min((i + hlfwnd + 1, h))
+            j1, j2 = np.max((0, j - hlfwnd)), np.min((j + hlfwnd + 1, w))
+
+            blk = angles_scaled[i1:i2, j1:j2]
+
+            cossum = -1
+            for val in np.nditer(blk):
+                cossum += np.cos(angles_scaled[i, j] - val)
+
+            # plt.figure()
+            # print('shape =', blk.shape, 'sum =', cossum)
+            # plt.imshow(blk)
+            # plt.show()
+
+            angcoh[i * blksize:(i + 1) * blksize,
+                   j * blksize:(j + 1) * blksize] = cossum
+    return angcoh
+
 
 def _orientblk_angle(orient: np.array,
                      point: tuple,
