@@ -1,6 +1,6 @@
 # PyFnPrint
 
-Simple fingerprint recognition library written in Python3
+Simple fingerprint recognition library written in Python3. The library implements various fingerprint preprocessing and recognition methods along with evaluation and database splitting utilities
 
 # Structure
 
@@ -31,6 +31,19 @@ Simple fingerprint recognition library written in Python3
 ## [example.py](example.py)
 
 - Example program that uses fplib sources to create a fingerprint identification model
+
+<!-- <details>
+<summary>Some images of processed fingerprints</summary> -->
+
+Original image         | Skeletonized
+:---------------------:|:------------------------------:
+![](./example/1.png)   | ![](./example/1_skeleton.png)
+**Original image**     | **Segmented**
+![](./example/2.png)   | ![](./example/2_segmented.png)
+**Ridge orientations** | **Minutae**
+![](./example/2_orientation.png) | ![](./example/2_minutae.png)
+
+<!-- </details> -->
 
 # Prerequisites:
 
