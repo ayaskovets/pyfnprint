@@ -1,0 +1,5 @@
+numpy
+pretty-confusion-matrix
+opencv-python
+scipy
+scikit-image
