@@ -6,12 +6,9 @@
 #
 
 from enum import Enum
-from itertools import combinations
-from math import tan
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics.pairwise import euclidean_distances
 
 import fplib.preprocess as fppreprocess
 
@@ -210,7 +207,7 @@ orientation() function
     if verbose:
         # PLOT: angles and core probability maps
         fpplot.plotstack((pnac[::blksize, ::blksize], crcl), axis='x')
-        fpplot._plotangles(crcl.repeat(blksize, axis=0).repeat(blksize, axis=1),
+        fpplot.plotangles(crcl.repeat(blksize, axis=0).repeat(blksize, axis=1),
             angl, blksize)
 
     return (row, col, MnType.Core)

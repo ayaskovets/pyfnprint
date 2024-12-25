@@ -12,7 +12,6 @@ import numpy as np
 
 
 from fplib.minutae import MnType
-from fplib.preprocess import _orientblk_angle
 
 
 def plotimage(image: np.array):
@@ -78,7 +77,7 @@ orientation() function
     plt.grid(False)
 
 
-def _plotangles(image: np.array,
+def plotangles(image: np.array,
                angles: np.array,
                blksize: int):
     """
