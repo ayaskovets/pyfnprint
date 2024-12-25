@@ -122,6 +122,7 @@ def load_templates(folder: str):
 
 def identify(fnp: fpimage.FingerprintImage,
              templates: list,
+             thresh_mean_multiplier: int,
              verbose: bool):
     nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp, verbose)
 
@@ -138,14 +139,14 @@ def identify(fnp: fpimage.FingerprintImage,
             distances[template[0]] += fpfeature.distance(feat_c, (feat, method))
 
     minid = min(distances, key=distances.get)
-    thresh = np.mean(list(distances.values())) / 1.5
+    thresh = np.mean(list(distances.values())) * thresh_mean_multiplier
 
     return minid if (distances[minid] < thresh) else None
 
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'vep')
+        opts, args = getopt.getopt(sys.argv[1:], 'vept:')
         if len(args) != 2:
             raise getopt.GetoptError('')
     except getopt.GetoptError:
@@ -156,6 +157,7 @@ if __name__ == "__main__":
             '\n\t-v               - enable verbose visualizations',
             '\n\t-e               - enroll mode',
             '\n\t-p               - prediction mode',
+            '\n\t-t [multiplier]  - mean distance to all templates is multiplied by this value to get prediction threshold',
             '\n\t[data_path]      - path to the data directory that contains train and test data',
             '\n\t[templates_path] - path to templates directory to store processed fingerprints to',
             sep='')
@@ -164,6 +166,7 @@ if __name__ == "__main__":
     verbose = False
     enroll_mode = False
     prediction_mode = False
+    thresh_mean_multiplier = 0.667
     data_path = args[0]
     templates_path = args[1]
 
@@ -183,6 +186,8 @@ if __name__ == "__main__":
             enroll_mode = True
         if opt == '-p':
             prediction_mode = True
+        if opt == '-t':
+            thresh_mean_multiplier = float(arg)
 
     if not enroll_mode and not prediction_mode:
         print('Either -e or -p must be specified')
@@ -211,5 +216,5 @@ if __name__ == "__main__":
                 print(f'[{i}/{len(test_fnps)}] Identifying {test_fnp.file_path}...')
 
                 name = path.basename(test_fnp.file_path)
-                id = identify(test_fnp, templates, verbose)
+                id = identify(test_fnp, templates, thresh_mean_multiplier, verbose)
                 predictionwriter.writerow([name, id])
