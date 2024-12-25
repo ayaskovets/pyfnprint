@@ -7,8 +7,8 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-from os import path, listdir
-import csv
+from os import path, listdir, makedirs
+import csv, getopt, sys
 
 import numpy as np
 
@@ -21,10 +21,7 @@ import fplib.plot       as fpplot
 import fplib.preprocess as fppreprocess
 
 
-verbose = False
-
-
-def _prepare(fnp: fpimage.FingerprintImage):
+def _prepare(fnp: fpimage.FingerprintImage, verbose: bool):
     # read image
     img = fnp.getData()
     img = fppreprocess.resize(img, width=400, height=500)
@@ -104,12 +101,13 @@ def _prepare(fnp: fpimage.FingerprintImage):
 
 
 def enroll(fnp: fpimage.FingerprintImage,
-           folder: str):
-    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp)
+           folder: str,
+           verbose: bool):
+    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp, verbose)
 
-    template_path = path.join(folder, str(fnp.id) + '_' + str(fnp.number))
-    np.save(template_path + '_r', feat_r, allow_pickle=True)
-    np.save(template_path + '_c', feat_c, allow_pickle=True)
+    template_path = path.join(folder, f'{fnp.id}_{fnp.number}')
+    np.save(f'{template_path}_r', feat_r[0], allow_pickle=True)
+    np.save(f'{template_path}_c', feat_c[0], allow_pickle=True)
 
 
 def load_templates(folder: str):
@@ -144,32 +142,58 @@ def identify(fnp: fpimage.FingerprintImage,
 
 
 if __name__ == "__main__":
-    # verbose = True
-    root = 'data'
-    template_storage = path.join(root, 'templates')
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'vd:i:')
+        if len(args) != 2:
+            raise getopt.GetoptError('')
+    except getopt.GetoptError:
+        print('usage: python3 ', sys.argv[0], ' [OPTIONS] [data_path] [templates_path]',
+            '\n\tRun predictions on prepared data'
+            '\n'
+            '\n\t[OPTIONS]:',
+            '\n\t-v               - enable verbose visualizations',
+            '\n\t[data_path]      - path to the data directory that contains train and test data',
+            '\n\t[templates_path] - path to templates directory to store processed fingerprints to',
+            sep='')
+        sys.exit(1)
 
-    # create templates
-    train_fnps = sorted(fpimage.readFolder(path.join(root, 'train', '*')))
-    for i in range(0, len(train_fnps)):
-        print('[', i + 1, '/', len(train_fnps), '] Enrolling ',
-            train_fnps[i].fppath, '...', sep='')
+    verbose = False
+    data_path = args[0]
+    templates_path = args[1]
 
-        enroll(train_fnps[i], template_storage)
+    if not path.exists(data_path) or not path.isdir(data_path):
+        print('[data_path] is not a directory')
+        sys.exit(1)
 
-    # write the prediction file
-    with open(path.join(root, 'prediction.csv'), 'w') as testfile:
+    if not path.exists(templates_path):
+        makedirs(templates_path)
+    elif not path.isdir(templates_path):
+        raise Exception('[templates_path] exists and is not a directory')
+
+    for opt, arg in opts:
+        if opt == '-v':
+            verbose = True
+
+    # Create templates
+    train_fnps = sorted(fpimage.readFolder(path.join(data_path, 'train', '*')))
+    for i, train_fnp in enumerate(train_fnps, start=1):
+        print(f'[{i}/{len(train_fnps)}] Enrolling {train_fnp.file_path}...')
+
+        enroll(train_fnp, templates_path, verbose)
+
+    # Write the prediction file
+    with open(path.join(data_path, 'prediction.csv'), 'w') as testfile:
         predictionwriter = csv.writer(testfile, delimiter=',')
         predictionwriter.writerow(['name', 'id'])
 
-        # load templates
-        templates = load_templates(template_storage)
+        # Load templates
+        templates = load_templates(templates_path)
 
-        # make predictions
-        test_fnps = sorted(fpimage.readFolder(path.join(root, 'test', '*')))
-        for i in range(0, len(test_fnps)):
-            print('[', i + 1, '/', len(test_fnps), '] Identifying ',
-                test_fnps[i].fppath, '...', sep='', end='')
+        # Make predictions
+        test_fnps = sorted(fpimage.readFolder(path.join(data_path, 'test', '*')))
+        for i, test_fnp in enumerate(train_fnps, start=1):
+            print(f'[{i}/{len(test_fnps)}] Identifying {test_fnp.file_path}...')
 
-            name = path.basename(test_fnps[i].fppath)
-            id = identify(test_fnps[i], templates)
-            predictionwriter.writerow([name, str(id)])
+            name = path.basename(test_fnp.file_path)
+            id = identify(test_fnp, templates)
+            predictionwriter.writerow([name, id])
