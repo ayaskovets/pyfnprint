@@ -182,6 +182,7 @@ if __name__ == '__main__':
             ['paths', input_paths],
             ['share_of_fingers_in_train', share_of_fingers_in_train],
             ['share_of_samples_per_finger_in_train', share_of_samples_per_finger_in_train],
+            ['enrolled', len(train_finger_ids)],
             ['---', '---'],
             ['name', 'true_id'],
         ])
