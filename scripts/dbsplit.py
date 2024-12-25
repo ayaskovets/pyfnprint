@@ -104,7 +104,7 @@ def split(input_paths: List[str],
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 's:f:i:')
-        if len(args) < 2:
+        if len(args) != 2:
             raise getopt.GetoptError('')
     except getopt.GetoptError:
         print('usage: python3 ', sys.argv[0], ' [OPTIONS] [input_paths] [output]',
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     if not path.exists(input_path):
         makedirs(input_path)
     elif not path.isdir(input_path):
-        raise Exception('[input_path] does exists and is not a directory')
+        raise Exception('[input_path] exists and is not a directory')
 
     # Split data
     random.seed(seed)
