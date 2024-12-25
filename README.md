@@ -1,51 +1,69 @@
-# PyFnPrint
+# pyfnprint fingerprint recognition library
 
-Simple fingerprint recognition library written in Python3. The library implements various fingerprint preprocessing and recognition methods along with evaluation and database splitting utilities
+## Disclaimer
+This is a simple fingerprint recognition library written in Python3. The library implements various fingerprint preprocessing and recognition methods along with evaluation and database splitting utilities. The library is focused on classical image-processing-based approach and does not use more advanced machine learning techniques such as neural networks.
 
-# Structure
+The library is created out of purely academic and research-related goals and does no focus on efficiency and/or is not created to be used in production.
 
-## [fplib](fplib)
+## References
+(Almost) all references that have been used to write the library are located in the [references](references) directory
 
-- The library sources containing the following modules:
-    - [image.py](fplib/image.py) - a wrapper for a fingerprint image with a filename like "${id}_${number}.${ext}" and lazy file reading
-    - [preprocess.py](fplib/preprocess.py) - preprocessing module containing various image quality enhancing functions and functions for extraction of ridge characteristics
-    - [binarize.py](fplib/binarize.py) - binarization module wrapping various opencv calls
-    - [filter.py](fplib/filter.py) - filtering module supporting custom kernels and gabor filtering
-    - [minutae.py](fplib/minutae.py) - minutae points extraction and preprocessing module supporting core point detection
-    - [feature.py](fplib/feature.py) - feature extraction and comparison module
-    - [plot.py](fplib/plot.py) - plotting module for various stages of preprocessing
+## TLDR
 
-## [db/PNG](db/PNG)
+### Prepare environment (assuming ${PWD} is the root of the repository)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+export PYTHONPATH=$PYTHONPATH:$PWD
+```
 
-- Database containing 128 high quality fingerprint images 8 for each user
-- More challenging are databases used by the FVC competition
+### Split [db](db) files into a random train/test parts
+```bash
+python3 scripts/dbsplit.py -f 75 -i 75 db/PNG data
+```
 
-## [dbsplit.py](dbsplit.py)
+### Enroll train data
+```bash
+python3 example/example.py -e data data/templates
+```
 
-- Command line tool for splitting any amount of fingerprint images into a single filesystem database with train/test structure. Generates test.csv file which can be used for remote evaluation of predictions
+### Identify test data
+```bash
+python3 example/example.py -p data data/templates
+```
 
-## [evaluation.py](evaluation.py)
+### Evaluate the predictions
+```bash
+python3 scripts/evaluation.py data/test.csv data/prediction.csv
+```
 
-- Command line tool for evaluating predictions
+## Directory tree structure
 
-## [example.py](example.py)
+### [src/fplib](src/fplib) - the main library sources
+- [image.py](src/fplib/image.py) - wrapper type for a fingerprint image with a filename formatted like `{id}_{number}.{extension}` and lazy reading
+- [preprocess.py](src/fplib/preprocess.py) - preprocessing with various image quality enhancing functions and functions for extraction of ridge characteristics
+- [binarize.py](src/fplib/binarize.py) - binarization and various `opencv` wrappers
+- [filter.py](src/fplib/filter.py) - filters with support of custom kernels and gabor filtering
+- [minutae.py](src/fplib/minutae.py) - extraction of minutae points and core point detection
+- [feature.py](src/fplib/feature.py) - feature extraction and comparison
+- [plot.py](src/fplib/plot.py) - plotting module for various stages of preprocessing
 
-- Example program that uses fplib sources to create a fingerprint identification model
+### [db/PNG](db/PNG) - toy database
+- A tiny database that contains 128 high quality fingerprint images - 8 for each user. Images are labeled as `{id}_{number}.png` where `id` is the identifier of a finger and `number` is the identifier of a specific fingerprint image of the finger
+- More challenging database can be found for example at the [FVC](https://en.wikipedia.org/wiki/Fingerprint_Verification_Competition) competition
 
-<!-- <details>
-<summary>Some images of processed fingerprints</summary> -->
+### [src](src) - command line utilities
+- [scripts/dbsplit.py](scripts/dbsplit.py) - сommand line tool for splitting any amount of fingerprint images into a single filesystem database with train/test structure
+- [scripts/evaluation.py](scripts/evaluation.py) - сommand line tool for evaluating predictions
 
-Original image         | Skeletonized
-:---------------------:|:------------------------------:
-![](./example/1.png)   | ![](./example/1_skeleton.png)
-**Original image**     | **Segmented**
-![](./example/2.png)   | ![](./example/2_segmented.png)
-**Ridge orientations** | **Minutae**
-![](./example/2_orientation.png) | ![](./example/2_minutae.png)
+### [example](example)
+- [example/example.py](example/example.py) - an example program that uses fplib sources to create a fingerprint identification model
 
-<!-- </details> -->
-
-# Prerequisites:
-
-- Python3 interpreter
-- Dependencies: numpy, opencv2, skimage, matplotlib, pandas, seaborn
+**Original image**                    | **Skeletonized**
+:------------------------------------:|:------------------------------:
+![](example/output/1.png)             | ![](example/output/1_skeleton.png)
+**Original image**                    | **Segmented**
+![](example/output/2.png)             | ![](example/output/2_segmented.png)
+**Ridge orientations**                | **Minutae**
+![](example/output/2_orientation.png) | ![](example/output/2_minutae.png)
