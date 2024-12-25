@@ -106,8 +106,8 @@ def enroll(fnp: fpimage.FingerprintImage,
     nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp, verbose)
 
     template_path = path.join(folder, f'{fnp.id}_{fnp.number}')
-    np.save(f'{template_path}_r', feat_r[0], allow_pickle=True)
-    np.save(f'{template_path}_c', feat_c[0], allow_pickle=True)
+    np.save(f'{template_path}_{feat_r[1]}', feat_r[0], allow_pickle=True)
+    np.save(f'{template_path}_{feat_c[1]}', feat_c[0], allow_pickle=True)
 
 
 def load_templates(folder: str):
@@ -115,35 +115,37 @@ def load_templates(folder: str):
     for template in listdir(folder):
         template_path = path.join(folder, template)
         id = template.split('_')[0]
-        templates.append((id, np.load(template_path, allow_pickle=True)))
+        method = template.split('_')[-1].split('.')[0]
+        templates.append((id, method, np.load(template_path, allow_pickle=True)))
     return templates
 
 
 def identify(fnp: fpimage.FingerprintImage,
-             templates: list):
-    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp)
+             templates: list,
+             verbose: bool):
+    nimg, mask, ornt, sklt, mnte, feat_r, feat_c = _prepare(fnp, verbose)
 
     distances = {}
     for template in templates:
-        if template[0] not in distances.keys():
-            distances[template[0]] = 0
+        id, method, feat = template
 
-        if template[1][1] == feat_r[1]:
-            distances[template[0]] += fpfeature.distance(feat_r, template[1])
-        if template[1][1] == feat_c[1]:
-            distances[template[0]] += fpfeature.distance(feat_c, template[1])
+        if id not in distances.keys():
+            distances[id] = 0
+
+        if method == feat_r[1]:
+            distances[template[0]] += fpfeature.distance(feat_r, (feat, method))
+        elif method == feat_c[1]:
+            distances[template[0]] += fpfeature.distance(feat_c, (feat, method))
 
     minid = min(distances, key=distances.get)
-    thresh = np.mean(list(distances.values()))/1.5
+    thresh = np.mean(list(distances.values())) / 1.5
 
-    ret = minid if (distances[minid] < thresh) else 0
-    print(ret, distances[minid], thresh)
-    return ret
+    return minid if (distances[minid] < thresh) else None
 
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'vd:i:')
+        opts, args = getopt.getopt(sys.argv[1:], 'vep')
         if len(args) != 2:
             raise getopt.GetoptError('')
     except getopt.GetoptError:
@@ -152,12 +154,16 @@ if __name__ == "__main__":
             '\n'
             '\n\t[OPTIONS]:',
             '\n\t-v               - enable verbose visualizations',
+            '\n\t-e               - enroll mode',
+            '\n\t-p               - prediction mode',
             '\n\t[data_path]      - path to the data directory that contains train and test data',
             '\n\t[templates_path] - path to templates directory to store processed fingerprints to',
             sep='')
         sys.exit(1)
 
     verbose = False
+    enroll_mode = False
+    prediction_mode = False
     data_path = args[0]
     templates_path = args[1]
 
@@ -173,27 +179,37 @@ if __name__ == "__main__":
     for opt, arg in opts:
         if opt == '-v':
             verbose = True
+        if opt == '-e':
+            enroll_mode = True
+        if opt == '-p':
+            prediction_mode = True
+
+    if not enroll_mode and not prediction_mode:
+        print('Either -e or -p must be specified')
+        sys.exit(1)
 
     # Create templates
-    train_fnps = sorted(fpimage.readFolder(path.join(data_path, 'train', '*')))
-    for i, train_fnp in enumerate(train_fnps, start=1):
-        print(f'[{i}/{len(train_fnps)}] Enrolling {train_fnp.file_path}...')
+    if enroll_mode:
+        train_fnps = sorted(fpimage.readFolder(path.join(data_path, 'train', '*')))
+        for i, train_fnp in enumerate(train_fnps, start=1):
+            print(f'[{i}/{len(train_fnps)}] Enrolling {train_fnp.file_path}...')
 
-        enroll(train_fnp, templates_path, verbose)
+            enroll(train_fnp, templates_path, verbose)
 
     # Write the prediction file
-    with open(path.join(data_path, 'prediction.csv'), 'w') as testfile:
-        predictionwriter = csv.writer(testfile, delimiter=',')
-        predictionwriter.writerow(['name', 'id'])
+    if prediction_mode:
+        with open(path.join(data_path, 'prediction.csv'), 'w') as testfile:
+            predictionwriter = csv.writer(testfile, delimiter=',')
+            predictionwriter.writerow(['name', 'id'])
 
-        # Load templates
-        templates = load_templates(templates_path)
+            # Load templates
+            templates = load_templates(templates_path)
 
-        # Make predictions
-        test_fnps = sorted(fpimage.readFolder(path.join(data_path, 'test', '*')))
-        for i, test_fnp in enumerate(train_fnps, start=1):
-            print(f'[{i}/{len(test_fnps)}] Identifying {test_fnp.file_path}...')
+            # Make predictions
+            test_fnps = sorted(fpimage.readFolder(path.join(data_path, 'test', '*')))
+            for i, test_fnp in enumerate(test_fnps, start=1):
+                print(f'[{i}/{len(test_fnps)}] Identifying {test_fnp.file_path}...')
 
-            name = path.basename(test_fnp.file_path)
-            id = identify(test_fnp, templates)
-            predictionwriter.writerow([name, id])
+                name = path.basename(test_fnp.file_path)
+                id = identify(test_fnp, templates, verbose)
+                predictionwriter.writerow([name, id])
