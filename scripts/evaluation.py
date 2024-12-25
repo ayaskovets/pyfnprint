@@ -11,14 +11,14 @@ from os import path
 import csv, getopt, sys
 
 from numpy import unique
-
-from third_party import confusion_matrix_pretty_print
+from pretty_confusion_matrix import pp_matrix_from_data
 
 
 def evaluate(test_csv_path: str,
              prediction_csv_path: str):
 
     # Read the real test ids
+    share_of_fingers_in_train = None
     enrolled = None
     test = {}
     with open(test_csv_path, 'r') as testcsv:
@@ -26,15 +26,21 @@ def evaluate(test_csv_path: str,
 
         testdata = False
         for row in testreader:
-            if testdata:
-                test[int(row[0].split('_')[0])] = int(row[1])
             if row[0] == 'enrolled':
                 enrolled = int(row[1])
-            if row[0] == 'name' and row[1] == 'id':
+            if row[0] == 'share_of_fingers_in_train':
+                share_of_fingers_in_train = int(row[1])
+            if testdata:
+                file_id = int(row[0].split('_')[1].split('.')[0])
+                true_id = int(row[1]) if row[1] else 'unknown'
+                test[file_id] = true_id
+            elif row[0] == 'name' and row[1] == 'true_id':
                 testdata = True
 
     if enrolled is None:
         raise Exception('Error: no \'enrolled,[value]\' row in' + sys.argv[1])
+    if share_of_fingers_in_train is None:
+        raise Exception('Error: no \'share_of_fingers_in_train,[value]\' row in' + sys.argv[1])
 
     # Read the prediction file
     prediction = {}
@@ -43,17 +49,19 @@ def evaluate(test_csv_path: str,
 
         for i, row in enumerate(predictionreader):
             if i == 0:
-                if (row[0] != 'name' or row[1] != 'id'):
+                if (row[0] != 'name' or row[1] != 'predicted_id'):
                     raise Exception('Error: ' + sys.argv[2] + 'must have\
                         [name, id] header row')
             else:
-                prediction[int(row[0].split('_')[0])] = int(row[1])
+                file_id = int(row[0].split('_')[1].split('.')[0])
+                predicted_id = int(row[1]) if row[1] else 'unknown'
+                prediction[file_id] = predicted_id
 
     columns = list(range(1, enrolled + 1))
-    if enrolled < len(unique(list(test.values()))):
-        columns = list(range(1, enrolled + 1)) + [0]
+    if share_of_fingers_in_train != 100:
+        columns.append('unknown')
 
-    confusion_matrix_pretty_print.plot_confusion_matrix_from_data(
+    pp_matrix_from_data(
         list(test.values()), list(prediction.values()),
         columns=columns, fz=8, show_null_values=True)
 
@@ -61,7 +69,7 @@ def evaluate(test_csv_path: str,
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], '')
-        if len(args) < 2:
+        if len(args) != 2:
             raise getopt.GetoptError('')
     except getopt.GetoptError:
         print('usage: python3 ', sys.argv[0], ' [test.csv] [prediction.csv]',

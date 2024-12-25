@@ -205,7 +205,7 @@ if __name__ == "__main__":
     if prediction_mode:
         with open(path.join(data_path, 'prediction.csv'), 'w') as testfile:
             predictionwriter = csv.writer(testfile, delimiter=',')
-            predictionwriter.writerow(['name', 'id'])
+            predictionwriter.writerow(['name', 'predicted_id'])
 
             # Load templates
             templates = load_templates(templates_path)
