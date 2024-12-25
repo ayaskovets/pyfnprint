@@ -131,3 +131,6 @@ dmypy.json
 
 # Test images folder
 data
+
+# MacOS-specific
+.DS_Store
