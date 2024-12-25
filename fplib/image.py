@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+from typing import List
 from glob import glob
 from os import path
 
@@ -23,10 +24,10 @@ class FingerprintImage:
     def __init__(self,
                  id: int,
                  number: int,
-                 fppath: str):
+                 file_path: str):
         self.id = id
         self.number = number
-        self.fppath = fppath
+        self.file_path = file_path
 
     def __eq__(self, other):
         return self.id == other.id and self.number == other.number
@@ -40,33 +41,33 @@ class FingerprintImage:
     def getData(self,
                 colorspace: int=cv.IMREAD_GRAYSCALE,
                 astype: int=np.uint8):
-        return cv.imread(self.fppath, colorspace).astype(astype)
+        return cv.imread(self.file_path, colorspace).astype(astype)
 
-def readOne(fppath: str):
+def readOne(file_path: str) -> FingerprintImage:
     """
     Read the single fingerprint image
 
     Arguments:
-        fppath - path to the image
+        file_path - path to the image
 
     Return FingerprintImage object
     """
-    if path.exists(fppath) and path.isfile(fppath):
-        spl = path.splitext(path.basename(fppath))[0].split('_')
+    if path.exists(file_path) and path.isfile(file_path):
+        spl = path.splitext(path.basename(file_path))[0].split('_')
         while '' in spl:
             spl.remove('')
 
         if len(spl) < 2:
-            raise Exception(fppath + ' must be \'[fingerid]_[imageid]\'.*')
+            raise Exception(file_path + ' must be \'[fingerid]_[imageid]\'.*')
 
         id, number = int(spl[0]), int(spl[1])
 
-        return FingerprintImage(id, number, fppath)
+        return FingerprintImage(id, number, file_path)
     else:
-        raise Exception(fppath + ' is not found!')
+        raise Exception(file_path + ' is not found!')
 
 
-def readFolder(wildcard: str):
+def readFolder(wildcard: str) -> List[FingerprintImage]:
     """
     Read folder using the wildcard match
 
